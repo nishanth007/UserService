@@ -3,18 +3,18 @@ package com.scaler.userservice.services;
 import com.scaler.userservice.dtos.LoginRequestDTO;
 import com.scaler.userservice.dtos.SignUpRequestDTO;
 import com.scaler.userservice.dtos.UserOutDTO;
+import com.scaler.userservice.models.Role;
 import com.scaler.userservice.models.Token;
 import com.scaler.userservice.models.User;
 import com.scaler.userservice.repositories.TokenRepository;
 import com.scaler.userservice.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -23,8 +23,11 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private TokenRepository tokenRepository;
-    @Override
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Override
     public User findByEmail(String email) {
         Optional<User> user = userRepository.findByEmail(email);
         return user.orElse(null);
@@ -32,10 +35,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserOutDTO signUp(SignUpRequestDTO signUpRequestDTO) {
+        User byEmail = findByEmail(signUpRequestDTO.getEmail());
+        if (byEmail != null) {
+            return UserOutDTO.from(byEmail);
+        }
         User user = new User();
         user.setEmail(signUpRequestDTO.getEmail());
         user.setName(signUpRequestDTO.getName());
-        user.setPassword(signUpRequestDTO.getPassword());
+        user.setRoles(List.of(new Role("INSTRUCTOR")));
+        //TODO Encryption of password
+        user.setPassword(passwordEncoder.encode(signUpRequestDTO.getPassword()));
         user = userRepository.save(user);
 
         return UserOutDTO.from(user);
@@ -47,6 +56,9 @@ public class UserServiceImpl implements UserService {
         User byEmail = findByEmail(loginRequestDTO.getEmail());
         if(byEmail == null) {
             throw new RuntimeException("User not found");
+        }
+        if(!passwordEncoder.matches(loginRequestDTO.getPassword(), byEmail.getPassword())) {
+            throw new RuntimeException("Wrong password");
         }
         token.setUser(byEmail);
         // Current date
@@ -70,13 +82,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Boolean validate(String tokenValue) {
+    public Token validate(String tokenValue) {
         Optional<Token> optionalToken = tokenRepository.findByValueAndDeletedFalseAndExpiresAfter(tokenValue,new Date());
         if (optionalToken.isEmpty()) {
-            return Boolean.FALSE;
+            throw new RuntimeException("Token not found");
         }
 
-        return Boolean.TRUE;
+        return optionalToken.get();
     }
 
     @Override

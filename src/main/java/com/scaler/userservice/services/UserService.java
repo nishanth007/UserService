@@ -14,7 +14,7 @@ public interface UserService {
 
     Token logIn(LoginRequestDTO loginRequestDTO);
 
-    Boolean validate(String tokenValue);
+    Token validate(String tokenValue);
 
     Boolean logOut(String tokenValue );
 }

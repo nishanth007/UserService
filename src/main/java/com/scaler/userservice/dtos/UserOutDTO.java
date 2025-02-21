@@ -19,6 +19,8 @@ public class UserOutDTO {
     private List<Role> roles;
 
     public static UserOutDTO from(User user) {
+        if(user == null) return null;
+
         UserOutDTO userOutDTO = new UserOutDTO();
         userOutDTO.name = user.getName();
         userOutDTO.email = user.getEmail();

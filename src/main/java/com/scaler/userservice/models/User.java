@@ -18,6 +18,6 @@ public class User extends BaseModel {
     @Column(unique = true , nullable = false)
     private String email;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER , cascade = CascadeType.PERSIST)
     private List<Role> roles;
 }

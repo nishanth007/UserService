@@ -30,12 +30,9 @@ public class UserController {
     }
 
     @GetMapping("/login/{tokenValue}")
-    ResponseEntity<String> validate(@PathVariable("tokenValue") String tokenValue){
-        Boolean validate = userService.validate(tokenValue);
-        if(validate){
-            return ResponseEntity.ok("Token is valid");
-        }
-        return ResponseEntity.ok("Invalid Token Redirected to Login");
+    ResponseEntity<Token> validate(@PathVariable("tokenValue") String tokenValue){
+        Token token = userService.validate(tokenValue);
+        return ResponseEntity.ok(token);
     }
 
     @GetMapping("/logout/{tokenValue}")
