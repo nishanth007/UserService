@@ -2,19 +2,30 @@ package com.scaler.userservice.services;
 
 import com.scaler.userservice.dtos.LoginRequestDTO;
 import com.scaler.userservice.dtos.SignUpRequestDTO;
+import com.scaler.userservice.dtos.UserINDTO;
 import com.scaler.userservice.dtos.UserOutDTO;
 import com.scaler.userservice.models.Token;
 import com.scaler.userservice.models.User;
+
+import java.util.List;
 
 public interface UserService {
 
     User findByEmail(String email);
 
-    UserOutDTO signUp(SignUpRequestDTO signUpRequestDTO);
+//    UserOutDTO signUp(SignUpRequestDTO signUpRequestDTO);
+//
+//    Token logIn(LoginRequestDTO loginRequestDTO);
+//
+//    Token validate(String tokenValue);
+//
+//    Boolean logOut(String tokenValue );
 
-    Token logIn(LoginRequestDTO loginRequestDTO);
+    User findById(Long id);
 
-    Token validate(String tokenValue);
+    List<User> findAll();
 
-    Boolean logOut(String tokenValue );
+    User updateUser(Long userId , UserINDTO user);
+
+    User updateUserRoles (UserINDTO user);
 }

@@ -7,6 +7,8 @@ import com.scaler.userservice.models.Role;
 import com.scaler.userservice.models.User;
 import com.scaler.userservice.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,9 +36,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map( role -> new SimpleGrantedAuthority("ROLE_"+ role.getValue())).collect(Collectors.toList());
         UserBuilder userBuilder = org.springframework.security.core.userdetails.User.withUsername(username)
-                .password(user.getPassword());
+                .password(user.getPassword())
+                .authorities(authorities);
 
         return userBuilder.build();
 
@@ -51,9 +56,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
-        ArrayList<Role> rolesList = new ArrayList<Role>();
-        rolesList.add(new Role("USER"));
-        user.setRoles(rolesList);
+        user.setRoles(request.getRoles());
 
         return userRepository.save(user);
     }

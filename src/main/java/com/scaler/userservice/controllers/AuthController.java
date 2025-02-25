@@ -1,6 +1,5 @@
-package com.scaler.userservice.services;
+package com.scaler.userservice.controllers;
 
-import com.scaler.userservice.Configurations.SecurityConfigs.CustomAuthenticationFilter;
 import com.scaler.userservice.Configurations.SecurityConfigs.CustomUserDetailsService;
 import com.scaler.userservice.Configurations.SecurityConfigs.TokenUtil;
 import com.scaler.userservice.dtos.LoginRequestDTO;
@@ -8,6 +7,7 @@ import com.scaler.userservice.dtos.SignUpRequestDTO;
 import com.scaler.userservice.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -51,16 +51,23 @@ public class AuthController {
         return ResponseEntity.ok("Bearer " + token);
     }
 
-    @GetMapping("/hello")
-    public String hello() {
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @GetMapping("/say")
+    public String sayMyName() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
             UserDetails principal = (UserDetails) authentication.getPrincipal();
-            return "Hello, Authenticated User! Welcome " + principal.getUsername();
+            return "Hello, Authenticated User! Welcome " + principal.getAuthorities().toString();
         }
 
 
+        return "Hello, Authenticated User!";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/hello")
+    public String hello() {
         return "Hello, Authenticated User!";
     }
 }
